@@ -5,6 +5,7 @@ html, body {
   margin: 0;
   font-family: 'Montserrat', sans-serif;
   color: white;
+  overflow: hidden;
 }
 
 body {
@@ -87,7 +88,7 @@ p {
   height: 50px;
 }
 
-.loginButton {
+.actionButton {
   width: 50%;
   height: 100%;
   background-color: #4f46e5;
@@ -99,12 +100,12 @@ p {
   transition: transform ease 0.25s;
 }
 
-.loginButton:hover {
+.actionButton:hover {
   cursor: pointer;
   transform: scale(1.02);
 }
 
-.loginButton:active {
+.actionButton:active {
   transform: scale(0.98);
 }
 
@@ -120,16 +121,21 @@ p {
 }
 
 .formSwitchContainer {
-  align-items: start;
   height: 60px;
+  align-items: start;
+  gap: 6px;
 }
 
-.formSwitchContainer p {
+.formSwitchContainer p, .formSwitchContainer a {
   font-size: 18px;
 }
 
-.formSwitchContainer p a {
+.formSwitchContainer a {
   text-decoration: none;
   color: #6f68fb;
   font-weight: 500;
+}
+
+.formSwitchContainer a:hover {
+  cursor: pointer;
 }

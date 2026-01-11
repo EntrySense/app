@@ -7,16 +7,16 @@
 </head>
 
 <body>
-  <div class="authCard">
+  <div class="authCard" id="authCard">
     <div class="logoContainer">
       <div></div>
     </div>
 
     <div class="promptContainer">
-      <p>Welcome Back</p>
+      <p id="prompt">Welcome Back</p>
     </div>
 
-    <div class="formContainer">
+    <div class="formContainer" id="authForm">
       <div>
         <p>Email Address</p>
         <input type="text" />
@@ -28,7 +28,7 @@
     </div>
 
     <div class="buttonContainer">
-      <input type="button" class="loginButton" value="Sign In" />
+      <input type="button" class="actionButton" id="actionButton" value="Sign In" />
     </div>
 
     <div class="errorMessagecontainer">
@@ -36,10 +36,8 @@
     </div>
 
     <div class="formSwitchContainer">
-      <p>
-        Do not have an account yet?
-        <a href="">Sign up</a>
-      </p>
+      <p id="formSwitchPrompt">Do not have an account?</p>
+      <a id="formSwitcher">Sign up</a>
     </div>
   </div>
 
