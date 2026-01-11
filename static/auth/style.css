@@ -38,8 +38,17 @@ p {
 .logoContainer div {
   width: 128px;
   height: 128px;
+  overflow: hidden;
   background-color: #646464;
   border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoContainer div img {
+  width: 128px;
+  height: 128px;
 }
 
 .promptContainer {

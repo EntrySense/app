@@ -4,12 +4,15 @@
   <meta charset="utf-8" />
   <title>EntrySense</title>
   <link rel="stylesheet" href="/static/auth/style.css" />
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
 </head>
 
 <body>
   <div class="authCard" id="authCard">
     <div class="logoContainer">
-      <div></div>
+      <div>
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}" />
+      </div>
     </div>
 
     <div class="promptContainer">

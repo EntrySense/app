@@ -13,7 +13,9 @@ function renderTab(option, forceSwitch) {
                 <div class="accountContent">
                     <div class="accountCard">
                         <div class="avatarContainer">
-                            <div class="avatar"></div>
+                            <div class="avatar">
+                                <p>No Avatar</p>
+                            </div>
                         </div>
                         <div class="promptContainer">
                             <p>Your Account</p>
