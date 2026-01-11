@@ -1,8 +1,35 @@
-let currentForm = 1, nameValue = "", emailValue = "", passwordValue = "", confirmPasswordValue = ""
+let currentForm = 0, nameValue = "", emailValue = "", passwordValue = "", confirmPasswordValue = ""
+
+function handleInput(e) {
+    switch (e.target.id) {
+        case "emailField":
+            emailValue = e.target.value
+            break
+        case "passwordField":
+            passwordValue = e.target.value
+            break
+        case "nameField":
+            nameValue = e.target.value
+            break
+        case "confirmPasswordField":
+            confirmPasswordValue = e.target.value
+            break
+    }
+}
+
+function handleSubmit(e) {
+    e.preventDefault()
+
+    if (currentForm === 2) {
+        signUp()
+    } else {
+        signIn()
+    }
+}
 
 async function signUp() {
     try {
-        const res = await fetch("http://127.0.0.1:8000/accounts", {
+        const res = await fetch("http://127.0.0.1:8000/auth/signup", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -19,14 +46,38 @@ async function signUp() {
             return
         }
 
-        console.log("Account created:", data.account_id)
-
+        window.location.reload()
     } catch (err) {
         console.error("Fetch error:", err)
     }
 }
 
-document.getElementById("formSwitcher").addEventListener("click", function (e) {
+async function signIn() {
+    try {
+        const res = await fetch("http://127.0.0.1:8000/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                email: emailValue,
+                password: passwordValue
+            }),
+        })
+
+        const data = await res.json()
+
+        if (!res.ok) {
+            console.error(data.error || "Login failed")
+            return
+        }
+
+        localStorage.setItem("token", data.token)
+        window.location.href = "/app"
+    } catch (err) {
+        console.error("Fetch error:", err)
+    }
+}
+
+function switchForms() {
     let form =
         `
         <div>
@@ -39,21 +90,20 @@ document.getElementById("formSwitcher").addEventListener("click", function (e) {
         </div>
     `
 
-    e.preventDefault()
-
     if (currentForm === 1) {
         currentForm = 2
         form =
             `
-        <div>
-            <p>Full Name</p>
-            <input type="text" id="nameField" value="${nameValue}" />
-        </div>
+            <div>
+                <p>Full Name</p>
+                <input type="text" id="nameField" value="${nameValue}" />
+            </div>
         ` + form + `
-        <div>
-            <p>Confirm Password</p>
-            <input type="password" id="confirmPasswordField" value="${confirmPasswordValue}" />
-        </div>`
+            <div>
+                <p>Confirm Password</p>
+                <input type="password" id="confirmPasswordField" value="${confirmPasswordValue}" />
+            </div>
+        `
 
         document.getElementById("authCard").style.height = "1000px"
         document.getElementById("authForm").style.height = "550px"
@@ -62,16 +112,6 @@ document.getElementById("formSwitcher").addEventListener("click", function (e) {
         document.getElementById("actionButton").value = "Create Account"
         document.getElementById("formSwitchPrompt").textContent = "Already have an account?"
         document.getElementById("formSwitcher").textContent = "Sign in"
-
-        document.getElementById("nameField").addEventListener("input", (e) => {
-            nameValue = e.target.value
-        })
-
-        document.getElementById("confirmPasswordField").addEventListener("input", (e) => {
-            confirmPasswordValue = e.target.value
-        })
-
-        document.getElementById("actionButton").addEventListener("click", async () => { signUp() })
     }
     else {
         currentForm = 1
@@ -83,12 +123,15 @@ document.getElementById("formSwitcher").addEventListener("click", function (e) {
         document.getElementById("formSwitchPrompt").textContent = "Do not have an account?"
         document.getElementById("formSwitcher").textContent = "Sign up"
     }
+}
 
-    document.getElementById("emailField").addEventListener("input", (e) => {
-        emailValue = e.target.value
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("authForm").addEventListener("input", handleInput)
+    document.getElementById("actionButton").addEventListener("click", handleSubmit)
+    document.getElementById("formSwitcher").addEventListener("click", (e) => {
+        e.preventDefault()
+        switchForms()
     })
 
-    document.getElementById("passwordField").addEventListener("input", (e) => {
-        passwordValue = e.target.value
-    })
+    switchForms()
 })
