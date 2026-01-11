@@ -1,4 +1,8 @@
-let currentTab, protection = false, lastEntrance = null
+let currentTab, protection = false, lastEntrance = null, fullName = "John Bloggs"
+
+function getInitials() {
+  return fullName.trim().split(" ").map(word => word[0]).join("").toUpperCase();
+}
 
 function renderTab(option, forceSwitch) {
     if (currentTab === option && !forceSwitch) return
@@ -14,7 +18,7 @@ function renderTab(option, forceSwitch) {
                     <div class="accountCard">
                         <div class="avatarContainer">
                             <div class="avatar">
-                                <p>No Avatar</p>
+                                <p>${getInitials()}</p>
                             </div>
                         </div>
                         <div class="promptContainer">
@@ -23,7 +27,7 @@ function renderTab(option, forceSwitch) {
                         <div class="formContainer">
                             <div>
                                 <p>Full Name</p>
-                                <input type="text" value="Name Surname" disabled />
+                                <input type="text" value="${fullName}" disabled />
                             </div>
                             <div>
                                 <p>Email Address</p>
