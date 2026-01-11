@@ -111,7 +111,29 @@ def require_auth(fn):
 @app.get("/auth/me")
 @require_auth
 def me():
-    return jsonify({"ok": True, "user_id": request.user_id}), 200
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT id, full_name, email, device_id FROM accounts WHERE id=%s",
+                (request.user_id,),
+            )
+            user = cur.fetchone()
+
+            if not user:
+                return jsonify({"error": "user not found"}), 404
+
+            return jsonify({
+                "ok": True,
+                "account": {
+                    "id": user["id"],
+                    "full_name": user["full_name"],
+                    "email": user["email"],
+                    "device_id": user["device_id"],
+                }
+            }), 200
+    finally:
+        conn.close()
 
 @app.route("/")
 def auth():

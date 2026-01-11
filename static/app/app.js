@@ -1,4 +1,4 @@
-let currentTab, protection = false, lastEntrance = null, fullName = "John Bloggs"
+let currentTab, protection = false, lastEntrance = null, fullName = "", email = ""
 
 function getInitials() {
     return fullName.trim().split(" ").map(word => word[0]).join("").toUpperCase()
@@ -27,15 +27,15 @@ function renderTab(option, forceSwitch) {
                         <div class="formContainer">
                             <div>
                                 <p>Full Name</p>
-                                <input type="text" value="${fullName}" disabled />
+                                <input type="text" id="nameDisplay" value="${fullName}" disabled />
                             </div>
                             <div>
                                 <p>Email Address</p>
-                                <input type="text" value="namesurname@gmail.com" disabled />
+                                <input type="text" id="emailDisplay" value="${email}" disabled />
                             </div>
                             <div>
                                 <p>Password</p>
-                                <input type="password" value="Asdasd123$" disabled />
+                                <input type="password" value="SomePassword123$" disabled />
                             </div>
                         </div>
                     </div>
@@ -107,18 +107,37 @@ function switchProtection(option) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const token = localStorage.getItem("token")
-  if (!token) {
-    window.location.replace("/")
-    return
-  }
+    const token = localStorage.getItem("token")
+    if (!token) {
+        window.location.replace("/")
+        return
+    }
 
-  const ok = await verifyToken(token)
-  if (!ok) {
-    localStorage.removeItem("token")
-    window.location.replace("/")
-  }
+    const ok = await verifyToken(token)
+    if (!ok) {
+        localStorage.removeItem("token")
+        window.location.replace("/")
+    }
+
+    const res = await fetch("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+
+    fullName = data.account.full_name
+    email = data.account.email
 })
+
+async function verifyToken(token) {
+    const res = await fetch("http://127.0.0.1:8000/auth/me", {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    return res.ok
+}
 
 
 renderTab("dashboard", false)
