@@ -254,7 +254,7 @@ p {
 }
 
 .listTitle {
-    width: 100%;
+    width: 475px;
     height: 75px;
     padding-left: 25px;
     display: flex;
@@ -270,7 +270,7 @@ p {
 .tableCategories {
   display: grid;
   grid-template-columns: 2fr 3fr;
-  height: 75px;
+  height: 73px;
   align-items: center;
   background-color: #262626;
   border-bottom: 2px solid #161616;
