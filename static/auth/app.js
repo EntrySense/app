@@ -27,7 +27,44 @@ function handleSubmit(e) {
     }
 }
 
+function validateFields() {
+    const errors = {}
+
+    const name = (nameValue || "").trim()
+    const nameOk = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/.test(name) && name.split(/\s+/).length >= 2
+    if (!name) errors.nameValue = "Full name is required."
+    else if (!nameOk) errors.nameValue = "Enter first and last name (letters only)."
+
+    const em = (emailValue || "").trim().toLowerCase()
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)
+    if (!em) errors.emailValue = "Email is required."
+    else if (!emailOk) errors.emailValue = "Enter a valid email address."
+
+    const pw = passwordValue || ""
+    if (!pw) errors.passwordValue = "Password is required."
+    else {
+        if (pw.length < 8) errors.passwordValue = "Password must be at least 8 characters."
+        else if (!/[a-z]/.test(pw)) errors.passwordValue = "Password must include a lowercase letter."
+        else if (!/[A-Z]/.test(pw)) errors.passwordValue = "Password must include an uppercase letter."
+        else if (!/[0-9]/.test(pw)) errors.passwordValue = "Password must include a number."
+        else if (!/[!@#$%^&*()_\-+=\[\]{}|\\:;"'<>,.?/]/.test(pw)) errors.passwordValue = "Password must include a special character.";
+    }
+
+    if (!confirmPasswordValue) errors.confirmPasswordValue = "Please confirm your password."
+    else if (pw !== confirmPasswordValue) errors.confirmPasswordValue = "Passwords do not match."
+
+    return errors
+}
+
 async function signUp() {
+    const errors = validateFields()
+
+    if (Object.keys(errors).length > 0) {
+        const firstError = Object.values(errors)[0]
+        document.getElementById("errorMessage").textContent = firstError
+        return
+    }
+
     try {
         const res = await fetch("http://127.0.0.1:8000/auth/signup", {
             method: "POST",
@@ -66,7 +103,7 @@ async function signIn() {
         const data = await res.json()
 
         if (!res.ok) {
-            console.error(data.error || "Login failed")
+            document.getElementById("errorMessage").textContent = data.error || "Server error"
             return
         }
 

@@ -54,7 +54,7 @@ def login():
     password = data.get("password")
 
     if not email or not password:
-        return jsonify({"error": "email and password are required"}), 400
+        return jsonify({"error": "Email and password are required to enter"}), 400
 
     conn = get_connection()
     try:
@@ -66,7 +66,7 @@ def login():
             user = cur.fetchone()
 
             if not user or not check_password_hash(user["password_hash"], password):
-                return jsonify({"error": "invalid email or password"}), 401
+                return jsonify({"error": "User with specified credentials does not exist"}), 401
 
             payload = {
                 "sub": str(user["id"]),
