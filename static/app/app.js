@@ -10,7 +10,30 @@ function renderTab(option, forceSwitch) {
     switch (option) {
         case "account":
             document.getElementById("root").innerHTML = `
-                <p>This is Account section</p>
+                <div class="accountContent">
+                    <div class="accountCard">
+                        <div class="avatarContainer">
+                            <div class="avatar"></div>
+                        </div>
+                        <div class="promptContainer">
+                            <p>Your Account</p>
+                        </div>
+                        <div class="formContainer">
+                            <div>
+                                <p>Full Name</p>
+                                <input type="text" value="Name Surname" disabled />
+                            </div>
+                            <div>
+                                <p>Email Address</p>
+                                <input type="text" value="namesurname@gmail.com" disabled />
+                            </div>
+                            <div>
+                                <p>Password</p>
+                                <input type="password" value="Asdasd123$" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
             `
             break
         case "dashboard":
@@ -51,4 +74,4 @@ function switchProtection(option) {
     renderTab("dashboard", true)
 }
 
-renderTab("dashboard", false)
+renderTab("account", false)
