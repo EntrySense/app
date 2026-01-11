@@ -24,6 +24,7 @@ p {
   height: 750px;
   background-color: #323232;
   border-radius: 15px;
+  transition: height ease 0.25s;
 }
 
 .logoContainer, .promptContainer, .formContainer, .buttonContainer, .errorMessagecontainer, .formSwitchContainer {

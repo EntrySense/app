@@ -22,7 +22,6 @@ document.getElementById("formSwitcher").addEventListener("click", function (e) {
         document.getElementById("authCard").style.height = "1000px"
         document.getElementById("authForm").style.height = "550px"
         document.getElementById("authForm").innerHTML = form
-
         document.getElementById("prompt").textContent = "Create Account"
         document.getElementById("actionButton").value = "Create Account"
         document.getElementById("formSwitchPrompt").textContent = "Already have an account?"
