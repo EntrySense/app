@@ -4,6 +4,7 @@ from db import get_connection
 from werkzeug.security import generate_password_hash, check_password_hash
 import os, jwt
 from datetime import datetime, timedelta, timezone
+from functools import wraps
 
 app = Flask(__name__)
 CORS(app, resources={r"/accounts": {"origins": "http://127.0.0.1:8000"}})
@@ -68,7 +69,7 @@ def login():
                 return jsonify({"error": "invalid email or password"}), 401
 
             payload = {
-                "sub": user["id"],
+                "sub": str(user["id"]),
                 "email": user["email"],
                 "exp": datetime.now(timezone.utc) + timedelta(minutes=JWT_EXP_MINUTES),
                 "iat": datetime.now(timezone.utc),
@@ -87,6 +88,30 @@ def login():
             }), 200
     finally:
         conn.close()
+
+def require_auth(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer "):
+            return jsonify({"error": "missing token"}), 401
+
+        token = auth.split(" ", 1)[1].strip()
+        try:
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            request.user_id = payload["sub"]
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "token expired"}), 401
+        except Exception:
+            return jsonify({"error": "invalid token"}), 401
+
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.get("/auth/me")
+@require_auth
+def me():
+    return jsonify({"ok": True, "user_id": request.user_id}), 200
 
 @app.route("/")
 def auth():

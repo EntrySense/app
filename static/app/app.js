@@ -1,7 +1,7 @@
 let currentTab, protection = false, lastEntrance = null, fullName = "John Bloggs"
 
 function getInitials() {
-  return fullName.trim().split(" ").map(word => word[0]).join("").toUpperCase();
+    return fullName.trim().split(" ").map(word => word[0]).join("").toUpperCase()
 }
 
 function renderTab(option, forceSwitch) {
@@ -105,5 +105,20 @@ function switchProtection(option) {
     protection = option
     renderTab("dashboard", true)
 }
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const token = localStorage.getItem("token")
+  if (!token) {
+    window.location.replace("/")
+    return
+  }
+
+  const ok = await verifyToken(token)
+  if (!ok) {
+    localStorage.removeItem("token")
+    window.location.replace("/")
+  }
+})
+
 
 renderTab("dashboard", false)

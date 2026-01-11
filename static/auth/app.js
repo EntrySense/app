@@ -125,7 +125,19 @@ function switchForms() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    const token = localStorage.getItem("token")
+
+    if (token) {
+        const ok = await verifyToken(token)
+
+        if (ok) {
+            window.location.replace("/app")
+            return
+        }
+        else localStorage.removeItem("token")
+    }
+
     document.getElementById("authForm").addEventListener("input", handleInput)
     document.getElementById("actionButton").addEventListener("click", handleSubmit)
     document.getElementById("formSwitcher").addEventListener("click", (e) => {
@@ -135,3 +147,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     switchForms()
 })
+
+async function verifyToken(token) {
+    const res = await fetch("http://127.0.0.1:8000/auth/me", {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    return res.ok
+}
