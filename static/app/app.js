@@ -1,4 +1,4 @@
-let currentTab, protection = false
+let currentTab, protection = false, lastEntrance = null
 
 function renderTab(option, forceSwitch) {
     if (currentTab === option && !forceSwitch) return
@@ -47,7 +47,7 @@ function renderTab(option, forceSwitch) {
                         <input type="button" class="armButton" id="armButton" value="Arm Door" ${protection ? "disabled" : ""} />
                         <input type="button" class="disarmButton" id="disarmButton" value="Disarm Door" ${!protection ? "disabled" : ""} />
                     </div>
-                    <p class="lastTrack">Last entrance tracked: DD/MM/YYYY HH:MM</p>
+                    <p class="lastTrack">Last entrance tracked: ${lastEntrance ? "DD/MM/YYYY HH:MM" : "Never"}</p>
                 </div>
             `
 
@@ -56,17 +56,43 @@ function renderTab(option, forceSwitch) {
 
             break
         case "history":
+            let recordsList = ""
+
+            for (let i = 1; i <= 10; i++) {
+                recordsList += `<div class="tableRecord">
+                    <p class="recordDate">DD/MM/YYYY HH:MM</p>
+                    <p class="recordDescription">Door Armed</p>
+                </div>`
+            }
+
             document.getElementById("root").innerHTML = `
-                <p>This is History section</p>
+                <div class="historyContent">
+                    <select class="historyFilter">
+                        <option>All activity</option>
+                        <option>Entrances tracked</option>
+                        <option>Door arms/disarms</option>
+                    </select>
+
+                    <div class="historyList">
+                        <p class="listTitle">Activity</p>
+                        <div class="tableCategories">
+                            <div><p>Time</p></div>
+                            <div><p>Description</p></div>
+                        </div>
+                        <div class="recordsList">
+                            ${recordsList}
+                        </div>
+                    </div>
+                </div>
             `
             break
     }
 }
 
 document.querySelector(".desktopMenu").addEventListener("click", (e) => {
-  const item = e.target.closest(".sectionItem")
-  if (!item) return
-  renderTab(item.dataset.tab, false)
+    const item = e.target.closest(".sectionItem")
+    if (!item) return
+    renderTab(item.dataset.tab, false)
 })
 
 function switchProtection(option) {
@@ -74,4 +100,4 @@ function switchProtection(option) {
     renderTab("dashboard", true)
 }
 
-renderTab("account", false)
+renderTab("dashboard", false)

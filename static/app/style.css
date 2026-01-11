@@ -70,13 +70,17 @@ p {
     height: calc(100% - 100px)
 }
 
-.dashboardContent, .accountContent {
+.dashboardContent, .accountContent, .historyContent {
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+}
+
+.historyContent {
+    gap: 50px;
 }
 
 .accountCard {
@@ -221,4 +225,78 @@ p {
 
 .lastTrack {
     font-size: 28px;
+}
+
+.historyFilter {
+    width: 250px;
+    height: 75px;
+    padding: 0 15px 0 15px;
+    background-color: #323232;
+    color: white;
+    font-size: 20px;
+    font-weight: 500;
+    border: 0;
+    border-radius: 5px;
+    transition: box-shadow ease 0.25s;
+}
+
+.historyFilter:focus {
+    outline: none;
+    border: 1px solid #888;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.historyList {
+    width: 500px;
+    height: 500px;
+    background-color: #323232;
+    border-radius: 15px;
+}
+
+.listTitle {
+    width: 100%;
+    height: 75px;
+    padding-left: 25px;
+    display: flex;
+    align-items: center;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.recordsTable {
+  width: 100%;
+}
+
+.tableCategories {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  height: 75px;
+  align-items: center;
+  background-color: #262626;
+  border-bottom: 2px solid #161616;
+}
+
+.tableCategories p {
+  padding-left: 25px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.recordsList {
+    width: 100%;
+    height: 350px;
+    overflow-y: scroll;
+}
+
+.tableRecord {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  height: 75px;
+  align-items: center;
+  border-bottom: 1px solid #161616;
+}
+
+.tableRecord p {
+  padding-left: 25px;
+  font-size: 18px;
 }
