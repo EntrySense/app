@@ -33,7 +33,45 @@ async function loadLastEntrance() {
     lastEntrance = data.record ? formatDateTimeDublin(data.record.created_at) : null
 }
 
-function renderTab(option, forceSwitch) {
+function formatHistoryDate(isoString) {
+    const d = new Date(isoString)
+    if (Number.isNaN(d.getTime())) return "—"
+
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    }).format(d).replace(",", "")
+}
+
+function formatHistoryDescription(event, description) {
+    if (description) return description
+
+    switch (event) {
+        case "arm": return "System armed"
+        case "disarm": return "System disarmed"
+        case "open": return "Door opened"
+        case "close": return "Door closed"
+        default: return event
+    }
+}
+
+async function loadHistory() {
+    const token = localStorage.getItem("token")
+    const res = await fetch("/history/me", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Failed to load history")
+
+    return data.records || []
+}
+
+async function renderTab(option, forceSwitch) {
     if (currentTab === option && !forceSwitch) return
 
     if (currentTab) document.getElementById(`sectionUnderline-${currentTab}`).style.width = "0"
@@ -91,13 +129,27 @@ function renderTab(option, forceSwitch) {
 
             break
         case "history":
-            let recordsList = ""
+            let recordsList = "", records = []
 
-            for (let i = 1; i <= 10; i++) {
-                recordsList += `<div class="tableRecord">
-                    <p class="recordDate">DD/MM/YYYY HH:MM</p>
-                    <p class="recordDescription">Door Armed</p>
-                </div>`
+            try {
+                records = await loadHistory()
+            } catch (e) {
+                recordsList = `<p class="emptyHistory">Failed to load history</p>`
+            }
+
+            if (!records.length) {
+                recordsList = `<p class="emptyHistory">No activity yet</p>`
+            } else {
+                for (const r of records) {
+                    recordsList += `
+                <div class="tableRecord">
+                    <p class="recordDate">${formatHistoryDate(r.created_at)}</p>
+                    <p class="recordDescription">
+                        ${formatHistoryDescription(r.event, r.description)}
+                    </p>
+                </div>
+            `
+                }
             }
 
             document.getElementById("root").innerHTML = `
