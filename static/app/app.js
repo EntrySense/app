@@ -134,12 +134,10 @@ async function renderTab(option, forceSwitch) {
             try {
                 records = await loadHistory()
             } catch (e) {
-                recordsList = `<p class="emptyHistory">Failed to load history</p>`
+                recordsList = `<p>Failed to load history</p>`
             }
 
-            if (!records.length) {
-                recordsList = `<p class="emptyHistory">No activity yet</p>`
-            } else {
+            if (records.length) {
                 for (const r of records) {
                     recordsList += `
                 <div class="tableRecord">
@@ -154,12 +152,6 @@ async function renderTab(option, forceSwitch) {
 
             document.getElementById("root").innerHTML = `
                 <div class="historyContent">
-                    <select class="historyFilter">
-                        <option>All activity</option>
-                        <option>Entrances tracked</option>
-                        <option>Door arms/disarms</option>
-                    </select>
-
                     <div class="historyList">
                         <p class="listTitle">Activity</p>
                         <div class="tableCategories">
