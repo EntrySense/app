@@ -9,7 +9,14 @@ from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
 
 app = Flask(__name__)
-CORS(app, resources={r"/accounts": {"origins": "http://127.0.0.1:8000"}})
+CORS(
+    app,
+    resources={r"/.*": {"origins": [
+        "http://127.0.0.1:8000",
+        "http://localhost:8000"
+    ]}},
+    supports_credentials=True
+)
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_EXP_MINUTES = int(os.getenv("JWT_EXP_MINUTES"))
@@ -261,6 +268,68 @@ def disarm_me():
     insert_history(device_id, "disarm", "System disarmed by user", assume_armed=was_armed)
     pubnub.publish().channel(f"device.{device_id}.cmd").message({"cmd": "disarm"}).sync()
     return jsonify({"ok": True, "device_id": device_id, "armed": False}), 200
+
+def serialize_history_row(row: dict) -> dict:
+    created_at = row.get("created_at")
+    return {
+        "id": row.get("id"),
+        "device_id": row.get("device_id"),
+        "created_at": created_at.isoformat() if hasattr(created_at, "isoformat") else created_at,
+        "event": row.get("event"),
+        "description": row.get("description"),
+    }
+
+@app.get("/history/me/last")
+@require_auth
+def history_last_me():
+    device_id = my_device(request.user_id)
+    if device_id is None:
+        return jsonify({"error": "No device assigned"}), 400
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, device_id, created_at, event, description
+                FROM history
+                WHERE device_id=%s
+                ORDER BY created_at DESC, id DESC
+                LIMIT 1
+                """,
+                (device_id,),
+            )
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"ok": True, "record": None}), 200
+
+            return jsonify({"ok": True, "record": serialize_history_row(row)}), 200
+    finally:
+        conn.close()
+
+@app.get("/history/me")
+@require_auth
+def history_all_me():
+    device_id = my_device(request.user_id)
+    if device_id is None:
+        return jsonify({"error": "No device assigned"}), 400
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT id, device_id, created_at, event, description
+                FROM history
+                WHERE device_id=%s
+                ORDER BY created_at DESC, id DESC
+                """,
+                (device_id,),
+            )
+            rows = cur.fetchall() or []
+            return jsonify({"ok": True, "records": [serialize_history_row(r) for r in rows]}), 200
+    finally:
+        conn.close()
 
 @app.route("/")
 def auth():
