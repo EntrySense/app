@@ -13,6 +13,7 @@ CORS(app, resources={r"/accounts": {"origins": "http://127.0.0.1:8000"}})
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_EXP_MINUTES = int(os.getenv("JWT_EXP_MINUTES"))
+DEVICE_API_KEY = os.getenv("DEVICE_API_KEY")
 
 pnconfig = PNConfiguration()
 pnconfig.subscribe_key = os.getenv("PUBNUB_SUBSCRIBE_KEY")
@@ -193,6 +194,31 @@ def insert_history(device_id: int, event: str, description: str = "", assume_arm
     finally:
         conn.close()
 
+def require_device_key(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        key = request.headers.get("X-Device-Key", "")
+        if not DEVICE_API_KEY or key != DEVICE_API_KEY:
+            return jsonify({"error": "unauthorized device"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
+
+@app.get("/devices/<int:device_id>/status")
+@require_device_key
+def device_status(device_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT arm_status FROM devices WHERE id=%s", (device_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Device not found"}), 404
+            armed = bool(row["arm_status"])
+    finally:
+        conn.close()
+
+    return jsonify({"ok": True, "device_id": device_id, "armed": armed}), 200
+
 @app.get("/devices/me/status")
 @require_auth
 def device_status_me():
@@ -245,4 +271,4 @@ def dashboard():
     return render_template("app/index.html")
 
 if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
