@@ -193,6 +193,26 @@ def insert_history(device_id: int, event: str, description: str = "", assume_arm
     finally:
         conn.close()
 
+@app.get("/devices/me/status")
+@require_auth
+def device_status_me():
+    device_id = my_device(request.user_id)
+    if device_id is None:
+        return jsonify({"error": "No device assigned"}), 400
+
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT arm_status FROM devices WHERE id=%s", (device_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Device not found"}), 404
+            armed = bool(row["arm_status"])
+    finally:
+        conn.close()
+
+    return jsonify({"ok": True, "device_id": device_id, "armed": armed}), 200
+
 @app.post("/devices/me/arm")
 @require_auth
 def arm_me():

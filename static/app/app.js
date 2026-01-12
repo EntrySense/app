@@ -113,6 +113,18 @@ async function switchProtection(option) {
     }
 }
 
+async function loadProtectionStatus() {
+    const token = localStorage.getItem("token")
+    const res = await fetch("/devices/me/status", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Failed to load status")
+
+    protection = data.armed
+}
+
 async function armDevice() {
     const token = localStorage.getItem("token")
     const res = await fetch("/devices/me/arm", {
@@ -155,6 +167,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     fullName = data.account.full_name
     email = data.account.email
+
+    await loadProtectionStatus()
+    renderTab("dashboard", true)
 })
 
 async function verifyToken(token) {
@@ -167,5 +182,3 @@ async function verifyToken(token) {
 
     return res.ok
 }
-
-renderTab("dashboard", false)
