@@ -1,4 +1,5 @@
 import os, time
+from flask import Blueprint, jsonify
 from dotenv import load_dotenv
 from pubnub.pnconfiguration import PNConfiguration
 from pubnub.pubnub import PubNub
@@ -16,6 +17,7 @@ pnconfig.subscribe_key = os.getenv("PUBNUB_SUBSCRIBE_KEY")
 pnconfig.publish_key = os.getenv("PUBNUB_PUBLISH_KEY")
 pnconfig.user_id = SERVICE_ID
 pubnub = PubNub(pnconfig)
+devices_bp = Blueprint("devices", __name__)
 
 def insert_history(device_id: int, event: str, ts: str, description: str):
     sql = """
@@ -26,6 +28,7 @@ def insert_history(device_id: int, event: str, ts: str, description: str):
     try:
         with conn.cursor() as cur:
             cur.execute(sql, (device_id, ts, event, description))
+        conn.commit()
     finally:
         conn.close()
 
@@ -34,6 +37,16 @@ def to_mysql_datetime(ts_iso: str | None) -> str:
         return datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
     dt = datetime.fromisoformat(ts_iso.replace("Z", "+00:00"))
     return dt.astimezone().replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")
+
+def is_armed(device_id: int) -> bool:
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT arm_status FROM devices WHERE id=%s", (device_id,))
+            row = cur.fetchone()
+            return bool(row["arm_status"]) if row else False
+    finally:
+        conn.close()
 
 class DoorListener(SubscribeCallback):
     def message(self, pubnub, event):
@@ -48,6 +61,10 @@ class DoorListener(SubscribeCallback):
             return
         if evt not in ("open", "close"):
             print("Ignored: invalid event:", msg)
+            return
+        
+        if not is_armed(device_id):
+            print("Ignored (disarmed):", msg)
             return
 
         mysql_ts = to_mysql_datetime(ts)

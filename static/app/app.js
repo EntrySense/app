@@ -101,9 +101,38 @@ document.querySelector(".desktopMenu").addEventListener("click", (e) => {
     renderTab(item.dataset.tab, false)
 })
 
-function switchProtection(option) {
-    protection = option
-    renderTab("dashboard", true)
+async function switchProtection(option) {
+    try {
+        if (option) await armDevice()
+        else await disarmDevice()
+
+        protection = option
+        renderTab("dashboard", true)
+    } catch (e) {
+        alert(e.message)
+    }
+}
+
+async function armDevice() {
+    const token = localStorage.getItem("token")
+    const res = await fetch("/devices/me/arm", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Failed to arm")
+    return data
+}
+
+async function disarmDevice() {
+    const token = localStorage.getItem("token")
+    const res = await fetch("/devices/me/disarm", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Failed to disarm")
+    return data
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -138,6 +167,5 @@ async function verifyToken(token) {
 
     return res.ok
 }
-
 
 renderTab("dashboard", false)
