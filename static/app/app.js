@@ -4,6 +4,35 @@ function getInitials() {
     return fullName.trim().split(" ").map(word => word[0]).join("").toUpperCase()
 }
 
+function formatDateTimeDublin(isoString) {
+    const d = new Date(isoString)
+    if (Number.isNaN(d.getTime())) return "—"
+
+    const fmt = new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Europe/Dublin",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    })
+
+    return fmt.format(d).replace(",", "")
+}
+
+async function loadLastEntrance() {
+    const token = localStorage.getItem("token")
+    const res = await fetch("/history/me/last-entrance", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Failed to load last entrance")
+
+    lastEntrance = data.record ? formatDateTimeDublin(data.record.created_at) : null
+}
+
 function renderTab(option, forceSwitch) {
     if (currentTab === option && !forceSwitch) return
 
@@ -53,7 +82,7 @@ function renderTab(option, forceSwitch) {
                         <input type="button" class="armButton" id="armButton" value="Arm Door" ${protection ? "disabled" : ""} />
                         <input type="button" class="disarmButton" id="disarmButton" value="Disarm Door" ${!protection ? "disabled" : ""} />
                     </div>
-                    <p class="lastTrack">Last entrance tracked: ${lastEntrance ? "DD/MM/YYYY HH:MM" : "Never"}</p>
+                    <p class="lastTrack">Last entrance tracked: ${lastEntrance ? lastEntrance : "Never"}</p>
                 </div>
             `
 
@@ -169,6 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     email = data.account.email
 
     await loadProtectionStatus()
+    await loadLastEntrance()
     renderTab("dashboard", true)
 })
 

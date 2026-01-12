@@ -307,9 +307,9 @@ def history_last_me():
     finally:
         conn.close()
 
-@app.get("/history/me")
+@app.get("/history/me/last-entrance")
 @require_auth
-def history_all_me():
+def last_entrance_me():
     device_id = my_device(request.user_id)
     if device_id is None:
         return jsonify({"error": "No device assigned"}), 400
@@ -321,13 +321,30 @@ def history_all_me():
                 """
                 SELECT id, device_id, created_at, event, description
                 FROM history
-                WHERE device_id=%s
+                WHERE device_id=%s AND event='open'
                 ORDER BY created_at DESC, id DESC
+                LIMIT 1
                 """,
                 (device_id,),
             )
-            rows = cur.fetchall() or []
-            return jsonify({"ok": True, "records": [serialize_history_row(r) for r in rows]}), 200
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"ok": True, "record": None}), 200
+
+            # created_at might be datetime; jsonify can handle it badly, so stringify
+            created_at = row["created_at"]
+            created_at_iso = created_at.isoformat() if hasattr(created_at, "isoformat") else str(created_at)
+
+            return jsonify({
+                "ok": True,
+                "record": {
+                    "id": row["id"],
+                    "device_id": row["device_id"],
+                    "created_at": created_at_iso,
+                    "event": row["event"],
+                    "description": row["description"],
+                }
+            }), 200
     finally:
         conn.close()
 
